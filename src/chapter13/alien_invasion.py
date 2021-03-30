@@ -22,6 +22,7 @@ class AlienInvasion:
         self._create_fleet()
 
     def run_game(self):
+        print("Run game test")
         while True:
             self._check_events()
             self.ship.update()

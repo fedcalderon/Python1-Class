@@ -25,10 +25,9 @@ class AlienInvasion:
         while True:
             self._check_events()
             self.ship.update()
-            self._update_screen()
-            self._update_aliens()
             self._update_bullets()
-
+            self._update_aliens()
+            self._update_screen()
 
     def _update_bullets(self):
         self.bullets.update()
@@ -37,6 +36,16 @@ class AlienInvasion:
                 self.bullets.remove(bullet)
 
         self._check_bullet_alien_collisions()
+
+    def _check_bullet_alien_collisions(self):
+        print("hello from _check_bullet_alien_collisions")
+        collisions = pygame.sprite.groupcollide(
+            self.bullets, self.aliens, True, True
+        )
+
+        if not self.aliens:
+            self.bullets.empty()
+            self._create_fleet()
 
     def _check_events(self):
         for event in pygame.event.get():
@@ -55,6 +64,13 @@ class AlienInvasion:
             self.ship.moving_left = True
         elif event.key == pygame.K_q:
             sys.exit()
+        elif event.key == pygame.K_SPACE:
+            self._fire_bullet()
+
+    def _fire_bullet(self):
+        if len(self.bullets) < self.settings.bullets_allowed:
+            new_bullet = Bullet(self)
+            self.bullets.add(new_bullet)
 
     def _check_keyup_events(self, event):
         """Respond to key releases"""
@@ -67,6 +83,10 @@ class AlienInvasion:
         """Update images on the screen"""
         self.screen.fill(self.settings.bg_color)
         self.ship.blitme()
+
+        for bullet in self.bullets.sprites():
+            bullet.draw_bullet()
+
         self.aliens.draw(self.screen)
 
         pygame.display.flip()

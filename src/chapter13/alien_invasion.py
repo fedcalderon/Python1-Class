@@ -29,23 +29,6 @@ class AlienInvasion:
             self._update_aliens()
             self._update_screen()
 
-    def _update_bullets(self):
-        self.bullets.update()
-        for bullet in self.bullets.copy():
-            if bullet.rect.bottom <= 0:
-                self.bullets.remove(bullet)
-
-        self._check_bullet_alien_collisions()
-
-    def _check_bullet_alien_collisions(self):
-        print("hello from _check_bullet_alien_collisions")
-        collisions = pygame.sprite.groupcollide(
-            self.bullets, self.aliens, True, True
-        )
-
-        if not self.aliens:
-            self.bullets.empty()
-            self._create_fleet()
 
     def _check_events(self):
         for event in pygame.event.get():
@@ -55,6 +38,7 @@ class AlienInvasion:
                 self._check_keydown_events(event)
             elif event.type == pygame.KEYUP:
                 self._check_keyup_events(event)
+
 
     def _check_keydown_events(self, event):
         """Respond to user pressing keys"""
@@ -67,10 +51,6 @@ class AlienInvasion:
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()
 
-    def _fire_bullet(self):
-        if len(self.bullets) < self.settings.bullets_allowed:
-            new_bullet = Bullet(self)
-            self.bullets.add(new_bullet)
 
     def _check_keyup_events(self, event):
         """Respond to key releases"""
@@ -79,17 +59,37 @@ class AlienInvasion:
         elif event.key == pygame.K_LEFT:
             self.ship.moving_left = False
 
-    def _update_screen(self):
-        """Update images on the screen"""
-        self.screen.fill(self.settings.bg_color)
-        self.ship.blitme()
 
-        for bullet in self.bullets.sprites():
-            bullet.draw_bullet()
+    def _fire_bullet(self):
+        if len(self.bullets) < self.settings.bullets_allowed:
+            new_bullet = Bullet(self)
+            self.bullets.add(new_bullet)
 
-        self.aliens.draw(self.screen)
 
-        pygame.display.flip()
+    def _update_bullets(self):
+        self.bullets.update()
+        for bullet in self.bullets.copy():
+            if bullet.rect.bottom <= 0:
+                self.bullets.remove(bullet)
+
+        self._check_bullet_alien_collisions()
+
+
+    def _check_bullet_alien_collisions(self):
+        collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, False, True)
+
+        print(f"[DEBUG] collisions type: {type(collisions)},\nvalue: {collisions}")
+
+        if not self.aliens:
+            self.bullets.empty()
+            self._create_fleet()
+
+
+
+    def _update_aliens(self):
+        self._check_fleet_edges()
+        self.aliens.update()
+
 
     def _create_fleet(self):
         """
@@ -111,6 +111,7 @@ class AlienInvasion:
             for alien_number in range(number_aliens_x):
                 self._create_alien(alien_number, row_number)
 
+
     def _create_alien(self, alien_number, row_number):
         alien = Alien(self)
         alien_width, alien_height = alien.rect.size
@@ -119,9 +120,6 @@ class AlienInvasion:
         alien.rect.y = alien.rect.height + 2 * alien.rect.height * row_number
         self.aliens.add(alien)
 
-    def _update_aliens(self):
-        self._check_fleet_edges()
-        self.aliens.update()
 
     def _check_fleet_edges(self):
         for alien in self.aliens.sprites():
@@ -129,10 +127,25 @@ class AlienInvasion:
                 self._change_fleet_direction()
                 break
 
+
     def _change_fleet_direction(self):
         for alien in self.aliens.sprites():
             alien.rect.y += self.settings.fleet_drop_speed
             self.settings.fleet_direction *= -1
+
+    def _update_screen(self):
+        """Update images on the screen"""
+        self.screen.fill(self.settings.bg_color)
+        self.ship.blitme()
+        print(f"[DEBUG] updating screen")
+        for bullet in self.bullets.sprites():
+            bullet.draw_bullet()
+            print(f"[DEBUG] drawing a bullet")
+
+        print(f"[DEBUG] draw aliens")
+        self.aliens.draw(self.screen)
+
+        pygame.display.flip()
 
 
 if __name__ == '__main__':

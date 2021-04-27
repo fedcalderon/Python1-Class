@@ -9,6 +9,7 @@ class Settings:
 
         # Ship Settings
         self.ship_speed = 2.5
+        self.ship_limit = 3
 
         # Alien settings
         self.alien_speed = 1.0
